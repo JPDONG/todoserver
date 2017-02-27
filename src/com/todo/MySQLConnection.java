@@ -24,6 +24,9 @@ public class MySQLConnection extends HttpServlet{
 	private static final String USER = "root";
 	private static final String PASS = "1234";
 	
+	private Connection mConnection;
+	private Statement mStatement;
+	
 	public MySQLConnection() {
 		super();
 	}
@@ -32,8 +35,8 @@ public class MySQLConnection extends HttpServlet{
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 		StringBuilder stringBuilder = new StringBuilder();
-		Connection connection= null;
-		Statement statement = null;
+		mConnection= null;
+		mStatement = null;
 		//resp.setContentType("text/html");
 		PrintWriter printWriter = resp.getWriter();
 		/*printWriter.println(
@@ -43,10 +46,10 @@ public class MySQLConnection extends HttpServlet{
 				"<h1 align=\"center\">tasks</h1>\n");*/
 		try {
 			Class.forName(JDBC_DRIVER);
-			connection = (Connection) DriverManager.getConnection(DB_URL,USER,PASS);
-			statement = (Statement) connection.createStatement();
+			mConnection = (Connection) DriverManager.getConnection(DB_URL,USER,PASS);
+			mStatement = (Statement) mConnection.createStatement();
 			String SQL_SELECT = "select * from tasks";
-			ResultSet resultSet = statement.executeQuery(SQL_SELECT);
+			ResultSet resultSet = mStatement.executeQuery(SQL_SELECT);
 			while (resultSet.next()) {
 				String id = resultSet.getString("id");
 				String title = resultSet.getString("title");
@@ -57,36 +60,37 @@ public class MySQLConnection extends HttpServlet{
 				printWriter.println("<h3>" + description + "</h3>");
 				printWriter.println("<h3>" + completed + "</h3>");*/
 				stringBuilder.append(id + "," + title + "," + description + "," + completed + ";");
-				JSONObject jsonObject = new JSONObject();
+				/*JSONObject jsonObject = new JSONObject();
 				jsonObject.put("id", id);
 				jsonObject.put("title", title);
 				jsonObject.put("description", description);
 				jsonObject.put("completed", completed);
-				//printWriter.write(jsonObject.toString());
-				System.out.println(jsonObject.toString());
+				printWriter.write(jsonObject.toString());
+				System.out.println(jsonObject.toString());*/
 			}
 			//printWriter.println("</body></html>");
 			printWriter.write(stringBuilder.toString());
+			System.out.println("get data");
 			printWriter.flush();
 			printWriter.close();
 			resultSet.close();
-			statement.close();
-			connection.close();
+			mStatement.close();
+			mConnection.close();
 		} catch (SQLException se) {
 			se.printStackTrace();
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			try {
-				if (statement != null) {
-					statement.close();
+				if (mStatement != null) {
+					mStatement.close();
 				}
 			} catch (Exception e2) {
 				// TODO: handle exception
 			}
 			try {
-				if (connection != null) {
-					connection.close();
+				if (mConnection != null) {
+					mConnection.close();
 				}
 			} catch (Exception e2) {
 				// TODO: handle exception
@@ -97,7 +101,44 @@ public class MySQLConnection extends HttpServlet{
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		doGet(req, resp);
+		mConnection= null;
+		mStatement = null;
+		String id = req.getParameter("id");
+		String description = req.getParameter("description");
+		String title = req.getParameter("title");
+		int completed = Integer.valueOf(req.getParameter("completed"));
+		try {
+			Class.forName(JDBC_DRIVER);
+		
+		mConnection = (Connection) DriverManager.getConnection(DB_URL,USER,PASS);
+		mStatement = (Statement) mConnection.createStatement();
+		String SQL_INSERT = "insert into tasks (id,title,description,completed) values ('" + id + "','" 
+				+ title + "','" + description + "','" + completed + "')";
+		int resultSet = mStatement.executeUpdate(SQL_INSERT);
+		System.out.println("insert data" + resultSet);
+		mStatement.close();
+		mConnection.close();
+		} catch (SQLException se) {
+			// TODO Auto-generated catch block
+			se.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (mStatement != null) {
+					mStatement.close();
+				}
+			} catch (Exception e2) {
+				// TODO: handle exception
+			}
+			try {
+				if (mConnection != null) {
+					mConnection.close();
+				}
+			} catch (Exception e2) {
+				// TODO: handle exception
+			}
+		}
 	}
 	
 	
