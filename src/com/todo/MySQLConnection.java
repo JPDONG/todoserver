@@ -103,18 +103,26 @@ public class MySQLConnection extends HttpServlet{
 			throws ServletException, IOException {
 		mConnection= null;
 		mStatement = null;
+		String SQL = null;
 		String id = req.getParameter("id");
 		String description = req.getParameter("description");
 		String title = req.getParameter("title");
 		int completed = Integer.valueOf(req.getParameter("completed"));
+		String operation = req.getParameter("operation");
 		try {
 			Class.forName(JDBC_DRIVER);
 		
 		mConnection = (Connection) DriverManager.getConnection(DB_URL,USER,PASS);
 		mStatement = (Statement) mConnection.createStatement();
-		String SQL_INSERT = "insert into tasks (id,title,description,completed) values ('" + id + "','" 
-				+ title + "','" + description + "','" + completed + "')";
-		int resultSet = mStatement.executeUpdate(SQL_INSERT);
+		if ("activate".equals(operation)) {
+			SQL = "update tasks set completed='0' where id='" + id + "'";
+		} else if ("complete".equals(operation)) {
+			SQL = "update tasks set completed='1' where id='" + id + "'";
+		} else {
+			SQL = "insert into tasks (id,title,description,completed) values ('" + id + "','" 
+					+ title + "','" + description + "','" + completed + "')";
+		}
+		int resultSet = mStatement.executeUpdate(SQL);
 		System.out.println("insert data" + resultSet);
 		mStatement.close();
 		mConnection.close();
