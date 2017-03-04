@@ -27,6 +27,10 @@ public class MySQLConnection extends HttpServlet{
 	private Connection mConnection;
 	private Statement mStatement;
 	
+	public static enum Operation {
+		SAVE,GET,COMPLETE,ACTIVATE,GETTIME,UPDATE
+	}
+	
 	public MySQLConnection() {
 		super();
 	}
@@ -104,50 +108,147 @@ public class MySQLConnection extends HttpServlet{
 		mConnection= null;
 		mStatement = null;
 		String SQL = null;
-		String id = req.getParameter("id");
-		String description = req.getParameter("description");
-		String title = req.getParameter("title");
-		int completed = Integer.valueOf(req.getParameter("completed"));
+		String id = null;
+		String description = null;
+		String title = null;
+		int completed = 0;
+		Operation currentOP = null;
 		String operation = req.getParameter("operation");
-		try {
-			Class.forName(JDBC_DRIVER);
-		
-		mConnection = (Connection) DriverManager.getConnection(DB_URL,USER,PASS);
-		mStatement = (Statement) mConnection.createStatement();
 		if ("activate".equals(operation)) {
-			SQL = "update tasks set completed='0' where id='" + id + "'";
+			currentOP = Operation.ACTIVATE;
 		} else if ("complete".equals(operation)) {
-			SQL = "update tasks set completed='1' where id='" + id + "'";
-		} else {
+			currentOP = Operation.COMPLETE;
+		} else if ("save".equals(operation)) {
+			currentOP = Operation.SAVE;
+		} else if ("gettime".equals(operation)) {
+			currentOP = Operation.GETTIME;
+		} else if ("update".equals(operation)) {
+			currentOP = Operation.UPDATE;
+		}
+		if (currentOP == null) {
+			return;
+		}
+		switch (currentOP) {
+		case SAVE:
+			System.err.println("save");
+			id = req.getParameter("id");
+			description = req.getParameter("description");
+			title = req.getParameter("title");
+			completed = Integer.valueOf(req.getParameter("completed"));
 			SQL = "insert into tasks (id,title,description,completed) values ('" + id + "','" 
 					+ title + "','" + description + "','" + completed + "')";
-		}
-		int resultSet = mStatement.executeUpdate(SQL);
-		System.out.println("insert data" + resultSet);
-		mStatement.close();
-		mConnection.close();
-		} catch (SQLException se) {
-			// TODO Auto-generated catch block
-			se.printStackTrace();
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				if (mStatement != null) {
-					mStatement.close();
-				}
-			} catch (Exception e2) {
-				// TODO: handle exception
+			if (SQL == null) {
+				return;
 			}
-			try {
-				if (mConnection != null) {
-					mConnection.close();
-				}
-			} catch (Exception e2) {
-				// TODO: handle exception
+			connectAndUpdate(SQL, resp);
+			break;
+		case ACTIVATE:
+			id = req.getParameter("id");
+			SQL = "update tasks set completed='0' where id='" + id + "'";
+			break;
+		case COMPLETE:
+			id = req.getParameter("id");
+			SQL = "update tasks set completed='1' where id='" + id + "'";
+			break;
+		case GETTIME:
+			getModifiedTime(resp);
+			break;
+		case UPDATE:
+			System.err.println("update");
+			id = req.getParameter("id");
+			description = req.getParameter("description");
+			title = req.getParameter("title");
+			completed = Integer.valueOf(req.getParameter("completed"));
+			SQL = "update tasks (title,description,completed) values (" 
+					+ title + "','" + description + "','" + completed + "') where id like " + id +";";
+			if (SQL == null) {
+				return;
 			}
+			connectAndUpdate(SQL,resp);
+			break;
+		default:
+			break;
 		}
+		
 	}
+
+	private void getModifiedTime(HttpServletResponse resp) {
+		String time = null;
+		try {
+			Class.forName(JDBC_DRIVER);
+			mConnection = (Connection) DriverManager.getConnection(DB_URL,USER,PASS);
+			mStatement = (Statement) mConnection.createStatement();
+			String SQL_GET_TIME = "select * from tasks order by time desc limit 1";
+			ResultSet resultSet = mStatement.executeQuery(SQL_GET_TIME);
+			PrintWriter printWriter = resp.getWriter();
+			if (resultSet.next()) {
+				time = resultSet.getString("time");
+			}
+			printWriter.write(time);
+			printWriter.close();
+			mStatement.close();
+			mConnection.close();
+			} catch (SQLException se) {
+				// TODO Auto-generated catch block
+				se.printStackTrace();
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				try {
+					if (mStatement != null) {
+						mStatement.close();
+					}
+				} catch (Exception e2) {
+					// TODO: handle exception
+				}
+				try {
+					if (mConnection != null) {
+						mConnection.close();
+					}
+				} catch (Exception e2) {
+					// TODO: handle exception
+				}
+			}
+		
+	}
+
+	private void connectAndUpdate(String SQL, HttpServletResponse resp) {
+		try {
+			Class.forName(JDBC_DRIVER);
+			mConnection = (Connection) DriverManager.getConnection(DB_URL,USER,PASS);
+			mStatement = (Statement) mConnection.createStatement();
+			int resultSet = mStatement.executeUpdate(SQL);
+			System.out.println("insert data" + resultSet);
+			PrintWriter printWriter = resp.getWriter();
+			printWriter.write("ok");
+			printWriter.close();
+			mStatement.close();
+			mConnection.close();
+			} catch (SQLException se) {
+				// TODO Auto-generated catch block
+				se.printStackTrace();
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				try {
+					if (mStatement != null) {
+						mStatement.close();
+					}
+				} catch (Exception e2) {
+					// TODO: handle exception
+				}
+				try {
+					if (mConnection != null) {
+						mConnection.close();
+					}
+				} catch (Exception e2) {
+					// TODO: handle exception
+				}
+			}
+		
+	}
+
+	
 	
 	
 }
