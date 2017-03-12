@@ -15,37 +15,33 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-
-<web-app xmlns="http://java.sun.com/xml/ns/javaee"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
-                      http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
-  version="3.0"
-  metadata-complete="true">
-
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" metadata-complete="true" version="3.0">
   <display-name>Welcome to Tomcat</display-name>
   <description>
      Welcome to Tomcat
   </description>
-  
   <servlet>
-        <servlet-name>WorkServlet</servlet-name>
-        <servlet-class>com.todo.WorkServlet</servlet-class>
+    <servlet-name>WorkServlet</servlet-name>
+    <servlet-class>com.todo.servlet.WorkServlet</servlet-class>
   </servlet>
-  
   <servlet-mapping>
-        <servlet-name>WorkServlet</servlet-name>
-        <url-pattern>/WorkServlet</url-pattern>
+    <servlet-name>WorkServlet</servlet-name>
+    <url-pattern>/WorkServlet</url-pattern>
   </servlet-mapping>
-  
   <servlet>
-        <servlet-name>MySQLConnection</servlet-name>
-        <servlet-class>com.todo.MySQLConnection</servlet-class>
+    <servlet-name>TasksServlet</servlet-name>
+    <servlet-class>com.todo.servlet.TasksServlet</servlet-class>
   </servlet>
-
   <servlet-mapping>
-        <servlet-name>MySQLConnection</servlet-name>
-        <url-pattern>/MySQLConnection</url-pattern>
+    <servlet-name>TasksServlet</servlet-name>
+    <url-pattern>/tasks</url-pattern>
   </servlet-mapping>
-
+  <servlet>
+    <servlet-name>UsersServlet</servlet-name>
+    <servlet-class>com.todo.servlet.UsersServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>UsersServlet</servlet-name>
+    <url-pattern>/users</url-pattern>
+  </servlet-mapping>
 </web-app>

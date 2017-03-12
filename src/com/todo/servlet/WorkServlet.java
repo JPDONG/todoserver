@@ -1,4 +1,4 @@
-package com.todo;
+package com.todo.servlet;
 
 import java.io.IOException;
 import java.io.PrintWriter;

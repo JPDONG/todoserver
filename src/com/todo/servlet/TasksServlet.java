@@ -1,4 +1,4 @@
-package com.todo;
+package com.todo.servlet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -16,31 +16,31 @@ import net.sf.json.JSONObject;
 import com.mysql.jdbc.Connection;
 import com.mysql.jdbc.Statement;
 
-
-
-public class MySQLConnection extends HttpServlet{
+public class TasksServlet extends HttpServlet{
 	private static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
 	private static final String DB_URL = "jdbc:mysql://localhost:3306/todoapp?autoReconnect=true&useSSL=false";
 	private static final String USER = "root";
 	private static final String PASS = "1234";
 	
-	private Connection mConnection;
-	private Statement mStatement;
+	private Connection mConnection = null;
+	private Statement mStatement = null;
 	
 	public static enum Operation {
 		SAVE,GET,COMPLETE,ACTIVATE,GETTIME,UPDATE
 	}
 	
-	public MySQLConnection() {
+	public TasksServlet() {
 		super();
 	}
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
+		getConnection();
+		if (mStatement == null) {
+			return;
+		}
 		StringBuilder stringBuilder = new StringBuilder();
-		mConnection= null;
-		mStatement = null;
 		//resp.setContentType("text/html");
 		PrintWriter printWriter = resp.getWriter();
 		/*printWriter.println(
@@ -49,9 +49,6 @@ public class MySQLConnection extends HttpServlet{
 				"<body bgcolor=\"#f0f0f0\">\n" +
 				"<h1 align=\"center\">tasks</h1>\n");*/
 		try {
-			Class.forName(JDBC_DRIVER);
-			mConnection = (Connection) DriverManager.getConnection(DB_URL,USER,PASS);
-			mStatement = (Statement) mConnection.createStatement();
 			String SQL_SELECT = "select * from tasks";
 			ResultSet resultSet = mStatement.executeQuery(SQL_SELECT);
 			while (resultSet.next()) {
@@ -171,13 +168,29 @@ public class MySQLConnection extends HttpServlet{
 		}
 		
 	}
-
-	private void getModifiedTime(HttpServletResponse resp) {
-		String time = null;
+	
+	private void getConnection() {
 		try {
 			Class.forName(JDBC_DRIVER);
 			mConnection = (Connection) DriverManager.getConnection(DB_URL,USER,PASS);
 			mStatement = (Statement) mConnection.createStatement();
+		} catch (SQLException se) {
+			// TODO Auto-generated catch block
+			se.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+
+	private void getModifiedTime(HttpServletResponse resp) {
+		getConnection();
+		if (mStatement == null) {
+			return;
+		}
+		String time = null;
+		try {
 			String SQL_GET_TIME = "select * from tasks order by time desc limit 1";
 			ResultSet resultSet = mStatement.executeQuery(SQL_GET_TIME);
 			PrintWriter printWriter = resp.getWriter();
@@ -185,6 +198,7 @@ public class MySQLConnection extends HttpServlet{
 				time = resultSet.getString("time");
 			}
 			printWriter.write(time);
+			printWriter.flush();
 			printWriter.close();
 			mStatement.close();
 			mConnection.close();
@@ -213,10 +227,11 @@ public class MySQLConnection extends HttpServlet{
 	}
 
 	private void connectAndUpdate(String SQL, HttpServletResponse resp) {
+		getConnection();
+		if (mStatement == null) {
+			return;
+		}
 		try {
-			Class.forName(JDBC_DRIVER);
-			mConnection = (Connection) DriverManager.getConnection(DB_URL,USER,PASS);
-			mStatement = (Statement) mConnection.createStatement();
 			int resultSet = mStatement.executeUpdate(SQL);
 			System.out.println("insert data" + resultSet);
 			PrintWriter printWriter = resp.getWriter();
