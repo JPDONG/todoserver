@@ -20,6 +20,7 @@
   <description>
      Welcome to Tomcat
   </description>
+  
   <servlet>
     <servlet-name>WorkServlet</servlet-name>
     <servlet-class>com.todo.servlet.WorkServlet</servlet-class>
@@ -28,6 +29,7 @@
     <servlet-name>WorkServlet</servlet-name>
     <url-pattern>/WorkServlet</url-pattern>
   </servlet-mapping>
+  
   <servlet>
     <servlet-name>TasksServlet</servlet-name>
     <servlet-class>com.todo.servlet.TasksServlet</servlet-class>
@@ -36,6 +38,7 @@
     <servlet-name>TasksServlet</servlet-name>
     <url-pattern>/tasks</url-pattern>
   </servlet-mapping>
+  
   <servlet>
     <servlet-name>UsersServlet</servlet-name>
     <servlet-class>com.todo.servlet.UsersServlet</servlet-class>
@@ -43,5 +46,14 @@
   <servlet-mapping>
     <servlet-name>UsersServlet</servlet-name>
     <url-pattern>/users</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>FilesServlet</servlet-name>
+    <servlet-class>com.todo.servlet.FilesServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>FilesServlet</servlet-name>
+    <url-pattern>/files</url-pattern>
   </servlet-mapping>
 </web-app>
